@@ -232,15 +232,13 @@ def parse_meshes(CurFile,Start,CurCollection,ArmData,self):
         FaceEntrySize = 2
         if FaceChunkSize > 65535:
             FaceEntrySize = 4
-        elif FaceChunkSize <= 256:
+        elif FaceChunkSize <= 260:
             FaceEntrySize = 1
         CurFile.seek(FaceEntrySize,1)
-        if VertCount < 0x100:
-            FSize = 1
-        elif VertCount < 0x10000:
-            FSize = 2
-        else:
-            FSize = 4
+        IndexCount = FaceCount
+        IndexBufferSize = FaceChunkSize - FaceEntrySize  # subtract header skip
+
+        FSize = IndexBufferSize // IndexCount
         for i in range(0,FaceCount,3):
             FaceTable.append((int.from_bytes(CurFile.read(FSize),byteorder='little'),int.from_bytes(CurFile.read(FSize),byteorder='little'),int.from_bytes(CurFile.read(FSize),byteorder='little')))
         #Read Vert Info
@@ -432,7 +430,7 @@ def utils_set_mode(mode):
         bpy.ops.object.mode_set(mode=mode, toggle=False)
 
 def menu_func_import(self, context):
-    self.layout.operator(PokeMastImport.bl_idname, text="Pokemon Masters (.lmd) TEST")
+    self.layout.operator(PokeMastImport.bl_idname, text="Pokemon Masters (.lmd)")
         
 def register():
     bpy.utils.register_class(PokeMastImport)
