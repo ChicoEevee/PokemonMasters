@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Pokemon Masters Importer (.LMD)",
-    "author": "Turk (small edits by Plastered_Crab, another small edit for 4.x-5.x by ChicoEevee)",
+    "author": "Turk (small edits by Plastered_Crab & ChicoEevee)",
     "version": (1, 0, 7),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
@@ -407,12 +407,16 @@ def create_material_info(self,matName):
         del tmpRead
         MatFile.seek(texOffset)
         texLength = int.from_bytes(MatFile.read(1),byteorder='little')
+        
+        path = MatFile.read(texLength).decode('utf-8')
+        relative_path = os.path.relpath(path)
 
-        #if the .ktx suffix is still in the texture filenames (due to the tool) use the code below
-        texName = os.path.relpath(MatFile.read(texLength).decode('utf-8'))+".png"
-
-        #if the .ktx suffix is not present in texture files (uncomment the line below)
-        #texName = os.path.relpath(MatFile.read(texLength).decode('utf-8')).strip(".ktx")+".png"
+        # Tries to find .ktx one if .ktx one dosnt exists will go for the one without .ktx
+        if os.path.exists(relative_path + ".png"):
+            texName = relative_path + ".png"
+        else:
+            texName = os.path.splitext(relative_path)[0] + ".png"
+        
         MatFile.close()
         del MatFile
         tmpOffset = texName.find("\\")+2
@@ -440,3 +444,4 @@ def unregister():
         
 if __name__ == "__main__":
     register()
+
