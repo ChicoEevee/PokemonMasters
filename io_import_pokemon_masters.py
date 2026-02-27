@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Pokemon Masters Importer (.LMD)",
-    "author": "Turk (small edits by Plastered_Crab)",
-    "version": (1, 0, 6),
+    "author": "Turk (small edits by Plastered_Crab, another small edit for 4.x-5.x by ChicoEevee)",
+    "version": (1, 0, 7),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "description": "A tool designed to import LMD files from the mobile game Pokemon Masters",
@@ -135,7 +135,10 @@ def parse_bones(CurFile,Start,CurCollection):
         edit_bone = armature_obj.data.edit_bones.new(BoneName)
         edit_bone.use_connect = False
         edit_bone.use_inherit_rotation = True
-        edit_bone.use_inherit_scale = True
+        if bpy.app.version[0] >= 4:
+            edit_bone.inherit_scale = 'NONE'
+        else:
+            edit_bone.use_inherit_scale = False
         edit_bone.use_local_location = True
         edit_bone.head = (0,0,0)
         edit_bone.tail = (0,0.05,0)
@@ -158,8 +161,6 @@ def parse_bones(CurFile,Start,CurCollection):
         bpy.ops.pose.armature_apply()
     utils_set_mode("OBJECT")
     
-    armature_obj.rotation_euler = (1.5707963705062866,0,0)
-
     return armature_obj
     
 def parse_meshes(CurFile,Start,CurCollection,ArmData,self):
@@ -264,7 +265,8 @@ def parse_meshes(CurFile,Start,CurCollection,ArmData,self):
         
         #BuildMesh
         mesh1 = bpy.data.meshes.new("Mesh")
-        mesh1.use_auto_smooth = True
+        if bpy.app.version[0] <= 3:
+            mesh1.use_auto_smooth = True
         obj = bpy.data.objects.new(MeshName,mesh1)
         CurCollection.objects.link(obj)
         bpy.context.view_layer.objects.active = obj
