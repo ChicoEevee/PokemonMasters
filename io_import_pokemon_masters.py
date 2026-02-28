@@ -62,7 +62,7 @@ class PokeMastImport(bpy.types.Operator, ImportHelper):
                 CurFile = open(filepath,"rb")
                 CurCollection = bpy.data.collections.new(file_elem.name)#Make Collection per lmd loaded
                 bpy.context.scene.collection.children.link(CurCollection)
-        
+                FilenameNoExtension = file_elem.name.rsplit(".",1)[0]
                 CurFile.seek(4)
                 lmdCheck = int.from_bytes(CurFile.read(4),byteorder='little')
                 if lmdCheck != 809782604:
@@ -93,7 +93,7 @@ class PokeMastImport(bpy.types.Operator, ImportHelper):
                     if TypeTable[x] == "mesh":
                         parse_meshes(CurFile,offset,CurCollection,ArmData,self)
                     elif TypeTable[x] == "bone":
-                        ArmData = parse_bones(CurFile,offset,CurCollection)
+                        ArmData = parse_bones(CurFile,offset,CurCollection, FilenameNoExtension)
                     elif TypeTable[x] == "material":
                         parse_materials(CurFile,offset)
         
@@ -105,12 +105,12 @@ def parse_materials(CurFile,Start):
     print("Material chunk at "+hex(Start))
     return
     
-def parse_bones(CurFile,Start,CurCollection):
+def parse_bones(CurFile,Start,CurCollection, filename):
     print("Bone chunk at "+hex(Start))
     CurFile.seek(Start+8)
     BoneCount = int.from_bytes(CurFile.read(4),byteorder='little')
-    armature_data = bpy.data.armatures.new("Armature")
-    armature_obj = bpy.data.objects.new("Armature", armature_data)
+    armature_data = bpy.data.armatures.new(filename)
+    armature_obj = bpy.data.objects.new(filename, armature_data)
     CurCollection.objects.link(armature_obj)
     bpy.context.view_layer.objects.active = armature_obj
     utils_set_mode('EDIT')
@@ -442,4 +442,3 @@ def unregister():
         
 if __name__ == "__main__":
     register()
-
